@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN cd /tmp \
     && curl -L -O https://downloads.haskell.org/~ghc/9.6.7/ghc-9.6.7-x86_64-ubuntu22_04-linux.tar.xz \
     && tar xf ghc-*.tar.xz \
-    && cd ghc-9.6.7-x86_64-ubuntu22_04-linux \
+    && cd ghc-9.6.7*/ \
     && ./configure \
     && make install \
     && ln -sf /usr/local/bin/ghc /usr/bin/ghc \
