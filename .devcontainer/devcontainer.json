@@ -26,5 +26,8 @@
       ]
     }
   },
+  "remoteEnv": {
+    "GHC_ENVIRONMENT": "/usr/local/lib/ghc-9.6.7/lib/ghc.env"
+  },
   "postCreateCommand": "echo 'CS115 ready!'"
 }
