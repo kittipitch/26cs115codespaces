@@ -40,3 +40,9 @@ RUN cabal update \
 # Part 5: Install Ormolu
 RUN cabal install ormolu \
     && ln -sf /root/.cabal/bin/ormolu /usr/local/bin/ormolu
+
+# Part 6: Install HLS (Haskell Language Server) globally via GHCup
+RUN ghcup install hls latest \
+    && ghcup set hls latest \
+    && ln -sf /usr/local/.ghcup/bin/haskell-language-server-wrapper /usr/local/bin/haskell-language-server-wrapper \
+    && ln -sf /usr/local/.ghcup/bin/haskell-language-server /usr/local/bin/haskell-language-server

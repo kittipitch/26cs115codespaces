@@ -9,6 +9,7 @@
         "github.copilot.chat.enabled": false,
         "github.copilot.editor.enableAutoCompletions": false,
         "workbench.secondarySideBar.visible": false,
+        "haskell.manageHLS": "PATH",
         "haskell.formattingProvider": "ormolu",
         "editor.tabSize": 2,
         "editor.insertSpaces": true,
