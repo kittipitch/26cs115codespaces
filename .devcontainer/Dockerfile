@@ -9,7 +9,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get update && apt-get install -y gh \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install GHCup to /opt so all users can access it
 ENV BOOTSTRAP_HASKELL_NONINTERACTIVE=1 \
     BOOTSTRAP_HASKELL_NO_UPGRADE=1 \
     BOOTSTRAP_HASKELL_INSTALL_STACK=1 \
@@ -17,15 +16,14 @@ ENV BOOTSTRAP_HASKELL_NONINTERACTIVE=1 \
     GHCUP_INSTALL_BASE_PREFIX=/opt \
     CABAL_DIR=/opt/.cabal
 
-RUN curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
-
-ENV PATH="/opt/.ghcup/bin:/opt/.cabal/bin:${PATH}"
-
-# Install HUnit and Ormolu
-RUN cabal update \
+# Install GHCup + GHC + cabal + HUnit + Ormolu in one shell so PATH is active
+SHELL ["/bin/bash", "-c"]
+RUN curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh \
+    && source /opt/.ghcup/env \
+    && cabal update \
     && cabal install --lib HUnit \
     && cabal install ormolu
 
-# Make PATH and package env available to all users (including vscode)
-RUN echo 'export PATH="/opt/.ghcup/bin:/opt/.cabal/bin:$PATH"' >> /etc/bash.bashrc \
+# Make tools available to all users
+RUN echo 'source /opt/.ghcup/env' >> /etc/bash.bashrc \
     && echo 'export GHC_ENVIRONMENT=/opt/.cabal/environments/default' >> /etc/bash.bashrc
