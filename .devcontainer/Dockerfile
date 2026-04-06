@@ -1,28 +1,42 @@
-FROM mcr.microsoft.com/devcontainers/base:ubuntu-24.04
+FROM mcr.microsoft.com/devcontainers/base:ubuntu-22.04
 
-# Install system dependencies + gh CLI
+# System dependencies + gh CLI
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential curl libffi-dev libffi8 libgmp-dev libgmp10 \
-    libncurses-dev pkg-config git \
+    build-essential curl xz-utils libffi-dev libffi8 libgmp-dev libgmp10 \
+    libncurses-dev libncurses5 libtinfo5 pkg-config git \
     && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
     && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list \
     && apt-get update && apt-get install -y gh \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install GHCup non-interactively (installs to /root/.ghcup by default)
-ENV BOOTSTRAP_HASKELL_NONINTERACTIVE=1 \
-    BOOTSTRAP_HASKELL_NO_UPGRADE=1 \
-    BOOTSTRAP_HASKELL_INSTALL_STACK=1
-RUN curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
+# Part 1: Install GHC 9.6.7 globally
+RUN cd /tmp \
+    && curl -L -O https://downloads.haskell.org/~ghc/9.6.7/ghc-9.6.7-x86_64-ubuntu22_04-linux.tar.xz \
+    && tar xf ghc-*.tar.xz \
+    && cd ghc-9.6.7-x86_64-ubuntu22_04-linux \
+    && ./configure \
+    && make install \
+    && ln -sf /usr/local/bin/ghc /usr/bin/ghc \
+    && cd / && rm -rf /tmp/ghc*
 
-# Install HUnit and Ormolu using sourced env
-RUN bash -c 'source /root/.ghcup/env && cabal update && cabal install --lib HUnit && cabal install ormolu'
+# Part 2: Install GHCup binary globally
+RUN curl -L -o /usr/local/bin/ghcup \
+    https://downloads.haskell.org/~ghcup/0.1.50.2/x86_64-linux-ghcup-0.1.50.2 \
+    && chmod +x /usr/local/bin/ghcup
 
-# Symlink binaries to /usr/local/bin so all users (vscode) can access them
-RUN bash -c 'source /root/.ghcup/env && \
-    for bin in ghc runghc ghci cabal stack ghcup ormolu; do \
-        ln -sf "$(which $bin)" /usr/local/bin/$bin 2>/dev/null || true; \
-    done'
+# Part 3: Install Cabal globally via GHCup
+ENV GHCUP_INSTALL_BASE_PREFIX=/usr/local
+RUN ghcup install cabal 3.10.3.0 \
+    && ghcup set cabal 3.10.3.0 \
+    && ln -sf /usr/local/.ghcup/bin/cabal /usr/local/bin/cabal
 
-# Allow vscode user to read ghcup/cabal package databases
-RUN chmod a+rx /root && chmod -R a+rX /root/.ghcup /root/.cabal
+# Part 4: Install HUnit into global package database
+RUN cabal update \
+    && cabal --store-dir=/usr/local/lib/ghc-9.6.7/cabal-store install --lib HUnit call-stack \
+        --package-db=/usr/local/lib/ghc-9.6.7/lib/package.conf.d \
+        --package-env=/usr/local/lib/ghc-9.6.7/lib/ghc.env \
+        --global --overwrite-policy=always
+
+# Part 5: Install Ormolu
+RUN cabal install ormolu \
+    && ln -sf /root/.cabal/bin/ormolu /usr/local/bin/ormolu
