@@ -9,21 +9,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get update && apt-get install -y gh \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# Install GHCup non-interactively (installs to /root/.ghcup by default)
 ENV BOOTSTRAP_HASKELL_NONINTERACTIVE=1 \
     BOOTSTRAP_HASKELL_NO_UPGRADE=1 \
-    BOOTSTRAP_HASKELL_INSTALL_STACK=1 \
-    GHCUP_USE_XDG_DIRS=0 \
-    GHCUP_INSTALL_BASE_PREFIX=/opt \
-    CABAL_DIR=/opt/.cabal
+    BOOTSTRAP_HASKELL_INSTALL_STACK=1
+RUN curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
 
-# Install GHCup + GHC + cabal + HUnit + Ormolu in one shell so PATH is active
-SHELL ["/bin/bash", "-c"]
-RUN curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh \
-    && source /opt/.ghcup/env \
-    && cabal update \
-    && cabal install --lib HUnit \
-    && cabal install ormolu
+# Install HUnit and Ormolu using sourced env
+RUN bash -c 'source /root/.ghcup/env && cabal update && cabal install --lib HUnit && cabal install ormolu'
 
-# Make tools available to all users
-RUN echo 'source /opt/.ghcup/env' >> /etc/bash.bashrc \
-    && echo 'export GHC_ENVIRONMENT=/opt/.cabal/environments/default' >> /etc/bash.bashrc
+# Symlink binaries to /usr/local/bin so all users (vscode) can access them
+RUN bash -c 'source /root/.ghcup/env && \
+    for bin in ghc runghc ghci cabal stack ghcup ormolu; do \
+        ln -sf "$(which $bin)" /usr/local/bin/$bin 2>/dev/null || true; \
+    done'
+
+# Allow vscode user to read ghcup/cabal package databases
+RUN chmod a+rx /root && chmod -R a+rX /root/.ghcup /root/.cabal

@@ -27,8 +27,7 @@
     }
   },
   "remoteEnv": {
-    "PATH": "/opt/.ghcup/bin:/opt/.cabal/bin:${containerEnv:PATH}",
-    "GHC_ENVIRONMENT": "/opt/.cabal/environments/default"
+    "GHC_ENVIRONMENT": "/root/.cabal/environments/default"
   },
   "postCreateCommand": "echo 'CS115 ready!'"
 }
