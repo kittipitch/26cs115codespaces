@@ -1,8 +1,8 @@
-FROM mcr.microsoft.com/devcontainers/base:ubuntu-22.04
+FROM mcr.microsoft.com/devcontainers/base:ubuntu-24.04
 
 # System dependencies + gh CLI
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential curl xz-utils libffi-dev libffi8 libgmp-dev libgmp10 \
+    build-essential curl xz-utils libffi-dev libgmp-dev libgmp10 \
     libncurses-dev pkg-config git \
     python3 python3-pip python3-venv \
     && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get update && apt-get install -y gh \
     && apt-get clean && rm -rf /var/lib/apt/lists/* \
     && update-alternatives --install /usr/bin/python python /usr/bin/python3 1 \
-    && pip3 install --no-cache-dir mypy
+    && pip3 install --no-cache-dir mypy --break-system-packages
 
 # Part 1: Install GHC 9.6.7 globally
 RUN cd /tmp \
