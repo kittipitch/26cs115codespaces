@@ -13,17 +13,25 @@
         "haskell.formattingProvider": "ormolu",
         "editor.tabSize": 2,
         "editor.insertSpaces": true,
-        "editor.formatOnSave": true
+        "editor.formatOnSave": true,
+        "python.defaultInterpreterPath": "/usr/bin/python3",
+        "mypy-type-checker.args": ["--ignore-missing-imports"]
       },
       "extensions": [
         "haskell.haskell",
         "justusadam.language-haskell",
         "usernamehw.errorlens",
-        "chocolatedesue.modern-pdf-preview"
+        "chocolatedesue.modern-pdf-preview",
+        "ms-python.python",
+        "ms-python.mypy-type-checker"
       ],
       "extensions.unwanted": [
         "GitHub.copilot",
-        "GitHub.copilot-chat"
+        "GitHub.copilot-chat",
+        "ms-python.vscode-pylance",
+        "ms-python.python-debugger",
+        "ms-python.python-environment-manager",
+        "ms-python.autopep8"
       ]
     }
   },
