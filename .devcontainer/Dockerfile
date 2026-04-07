@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get update && apt-get install -y gh \
     && apt-get clean && rm -rf /var/lib/apt/lists/* \
     && update-alternatives --install /usr/bin/python python /usr/bin/python3 1 \
-    && pip3 install --no-cache-dir mypy --break-system-packages
+    && pip3 install --no-cache-dir mypy
 
 # Part 1: Install GHC 9.6.7 globally
 RUN cd /tmp \
