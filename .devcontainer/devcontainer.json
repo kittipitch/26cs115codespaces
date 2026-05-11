@@ -1,0 +1,46 @@
+{
+  "name": "CS115 Codespace",
+  "image": "ghcr.io/kittipitch/cs115-devcontainer:latest",
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "chat.disableAIFeatures": true,
+        "github.copilot.enable": { "*": false },
+        "github.copilot.chat.enabled": false,
+        "github.copilot.editor.enableAutoCompletions": false,
+        "workbench.secondarySideBar.visible": false,
+        "haskell.manageHLS": "PATH",
+        "haskell.formattingProvider": "ormolu",
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true,
+        "editor.formatOnSave": true,
+        "python.defaultInterpreterPath": "/usr/bin/python3",
+        "mypy-type-checker.args": ["--ignore-missing-imports"]
+      },
+      "extensions": [
+        "haskell.haskell",
+        "justusadam.language-haskell",
+        "usernamehw.errorlens",
+        "chocolatedesue.modern-pdf-preview",
+        "ms-python.python",
+        "ms-python.mypy-type-checker"
+      ],
+      "extensions.unwanted": [
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "ms-python.vscode-pylance",
+        "ms-python.python-debugger",
+        "ms-python.python-environment-manager",
+        "ms-python.autopep8"
+      ]
+    }
+  },
+  "remoteEnv": {
+    "GHC_ENVIRONMENT": "/usr/local/lib/ghc-9.6.7/lib/ghc.env"
+  },
+  "postCreateCommand": "chmod +x .devcontainer/*.sh && echo 'CS115 ready!'",
+  "postStartCommand": "nohup .devcontainer/autosync.sh > /tmp/autosync.log 2>&1 &"
+}
