@@ -19,10 +19,18 @@ REMOTE_URL="git@github.com:${USERNAME}/${REPO_NAME}.git"
 cd /workspaces/26cs115codespaces
 rm -rf .git
 git init
-git config user.name "$(gh api user -q .name)"
+git checkout -b main
+
+# Fallback identity if GitHub profile is incomplete
+NAME=$(gh api user -q .name)
+if [ -z "$NAME" ] || [ "$NAME" == "null" ]; then
+  NAME="$USERNAME"
+fi
+
+git config user.name "$NAME"
 git config user.email "${USERNAME}@users.noreply.github.com"
 git add .
-git commit -m "Initial workspace" 2>/dev/null || true
+git commit -m "Initial workspace"
 
 # Create repo if it doesn't exist, otherwise just connect to it
 if gh repo create "$REPO_NAME" --private --source=. --remote=origin --push 2>/dev/null; then
