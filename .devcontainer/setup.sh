@@ -37,16 +37,22 @@ if gh repo create "$REPO_NAME" --private --source=. --remote=origin --push 2>/de
   echo ""
   echo "✅ Done! Your work is saved at: https://github.com/${USERNAME}/${REPO_NAME}"
 else
-  echo "Repo already exists — connecting to it..."
+  echo "Repo already exists — restoring your work from GitHub..."
   git remote add origin "$REMOTE_URL" 2>/dev/null || git remote set-url origin "$REMOTE_URL"
-  
-  # Pull existing work if any
-  echo "Syncing with GitHub..."
-  git fetch origin main 2>/dev/null || true
-  if git rev-parse --verify origin/main >/dev/null 2>&1; then
-    git pull origin main --rebase --allow-unrelated-histories
+
+  if git fetch origin main 2>/dev/null && git rev-parse --verify -q origin/main >/dev/null; then
+    # Your work on GitHub wins. Keep a copy of the fresh template first, so new
+    # files from it (new weeks) and its updated .devcontainer scripts survive.
+    TPL=$(mktemp -d)
+    tar --exclude=.git -cf - . | tar -xf - -C "$TPL"
+    git reset -q --hard origin/main
+    cp -an "$TPL"/. .                         # add template files you don't have yet
+    cp -a "$TPL"/.devcontainer/. .devcontainer/  # always use the latest workspace scripts
+    rm -rf "$TPL"
+    git add -A
+    git diff --cached --quiet || git commit -q -m "Update workspace from template"
   fi
-  
+
   git push -u origin main
   echo ""
   echo "✅ Done! Your work is saved at: https://github.com/${USERNAME}/${REPO_NAME}"
