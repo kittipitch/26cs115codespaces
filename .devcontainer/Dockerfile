@@ -29,24 +29,37 @@ RUN curl -L -o /usr/local/bin/ghcup \
 
 # Part 3: Install Cabal globally via GHCup
 ENV GHCUP_INSTALL_BASE_PREFIX=/usr/local
-RUN ghcup install cabal 3.10.3.0 \
-    && ghcup set cabal 3.10.3.0 \
+RUN ghcup install cabal 3.16.1.0 \
+    && ghcup set cabal 3.16.1.0 \
     && ln -sf /usr/local/.ghcup/bin/cabal /usr/local/bin/cabal
 
-# Part 4: Install HUnit into global package database
+# Part 4: HUnit into the global package database, pinned to the grader's versions
 RUN cabal update \
-    && cabal --store-dir=/usr/local/lib/ghc-9.6.7/cabal-store install --lib HUnit call-stack \
+    && cabal --store-dir=/usr/local/lib/ghc-9.6.7/cabal-store install --lib HUnit-1.6.2.0 call-stack \
+        --constraint='call-stack ==0.4.0' \
         --package-db=/usr/local/lib/ghc-9.6.7/lib/package.conf.d \
         --package-env=/usr/local/lib/ghc-9.6.7/lib/ghc.env \
         --global --overwrite-policy=always
 
-# Part 5: Install Ormolu
-RUN cabal install ormolu \
-    && ln -sf /root/.cabal/bin/ormolu /usr/local/bin/ormolu
+# Part 4b: QuickCheck (204115 property tests), the grader's exact version set.
+# Shipped GHC libs stay on the compiler's own versions ('installed').
+RUN cabal --store-dir=/usr/local/lib/ghc-9.6.7/cabal-store install --lib QuickCheck-2.14.3 \
+        --constraint='containers installed' --constraint='bytestring installed' \
+        --constraint='directory installed' --constraint='mtl installed' --constraint='stm installed' \
+        --constraint='splitmix ==0.1.3.2' --constraint='random ==1.2.1.3' \
+        --package-db=/usr/local/lib/ghc-9.6.7/lib/package.conf.d \
+        --package-env=/usr/local/lib/ghc-9.6.7/lib/ghc.env \
+        --global --overwrite-policy=always
+
+# Part 5: Ormolu 0.7.2.0 (formatting differs between versions). Copy the binary
+# into /usr/local/bin: a symlink into /root/.cabal/bin is unreadable for the
+# vscode user, which left ormolu "command not found" and format-on-save dead.
+RUN cabal install ormolu-0.7.2.0 --install-method=copy --installdir=/usr/local/bin \
+        --overwrite-policy=always
 
 # Part 6: Install HLS (Haskell Language Server) globally via GHCup
-RUN ghcup install hls latest \
-    && ghcup set hls latest \
+RUN ghcup install hls 2.14.0.0 \
+    && ghcup set hls 2.14.0.0 \
     && for f in /usr/local/.ghcup/bin/haskell-language-server*; do \
          ln -sf "$f" /usr/local/bin/$(basename "$f"); \
        done
